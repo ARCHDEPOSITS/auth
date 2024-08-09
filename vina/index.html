@@ -80,55 +80,58 @@
             display: block;
         }
     </style>
-    <script>
-        function encrypt(text) {
-            return btoa(text); // Base64 encoding
-        }
+    <!-- Firebase App (core) -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-        function decrypt(text) {
-            return atob(text); // Base64 decoding
-        }
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBnYpyNuQ_ff7v5LeoZZwJbjdAa2VcsFE",
+            authDomain: "tset-9e3d0.firebaseapp.com",
+            projectId: "tset-9e3d0",
+            storageBucket: "tset-9e3d0.appspot.com",
+            messagingSenderId: "328152190837",
+            appId: "1:328152190837:web:7845175733963ac46d4d3c",
+            measurementId: "G-JN1W16WGZF"
+        };
 
-        async function loadCredentials() {
-            const response = await fetch('credentials.keyloop');
-            const credentials = await response.json();
-            return credentials;
-        }
-
-        async function authenticate(username, password) {
-            const credentials = await loadCredentials();
-            if (username in credentials) {
-                const encryptedPassword = credentials[username];
-                const decryptedPassword = decrypt(encryptedPassword);
-                return decryptedPassword === password;
-            }
-            return false;
-        }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
         async function handleLogin(event) {
             event.preventDefault();
-            const username = document.getElementById('login-username').value;
+            const email = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
 
-            if (await authenticate(username, password)) {
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
                 document.getElementById('message').textContent = 'Login successful!';
-                // Redirect to the original page
                 const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
                 if (redirectUrl) {
                     window.location.href = redirectUrl;
                 }
-            } else {
+            } catch (error) {
                 document.getElementById('message').textContent = 'Sorry! This stuff don’t match our stuff.';
             }
         }
 
         async function handleRegistration(event) {
             event.preventDefault();
-            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-username').value;
             const password = document.getElementById('register-password').value;
 
-            // Registration functionality would go here, such as sending data to a server
-            alert('Registration functionality is not implemented in this example.');
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert('Registration successful!');
+                switchToLogin();
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            }
         }
 
         function switchToRegister() {
@@ -159,27 +162,28 @@
 <body>
     <div class="container">
         <img src="logo.png" alt="Logo" class="logo">
-        <h1 id="page-title">Authentication</h1>
-        <div id="login-form" class="form-container">
+        <div id="login-form" class="form-container active">
+            <h1>Login</h1>
             <form>
-                <label for="login-username">Username:</label>
-                <input type="text" id="login-username" required>
-                <label for="login-password">Password:</label>
+                <label for="login-username">Email</label>
+                <input type="email" id="login-username" required>
+                <label for="login-password">Password</label>
                 <input type="password" id="login-password" required>
                 <button type="submit">Login</button>
+                <div id="message"></div>
             </form>
-            <div id="message"></div>
-            <p>Don't have an account? <a href="#" id="switch-to-register">Register here</a></p>
+            <p>Don't have an account? <a href="#" id="switch-to-register">Register</a></p>
         </div>
         <div id="register-form" class="form-container">
+            <h1>Register</h1>
             <form>
-                <label for="register-username">Username:</label>
-                <input type="text" id="register-username" required>
-                <label for="register-password">Password:</label>
+                <label for="register-username">Email</label>
+                <input type="email" id="register-username" required>
+                <label for="register-password">Password</label>
                 <input type="password" id="register-password" required>
                 <button type="submit">Register</button>
             </form>
-            <p>Already have an account? <a href="#" id="switch-to-login">Login here</a></p>
+            <p>Already have an account? <a href="#" id="switch-to-login">Login</a></p>
         </div>
     </div>
 </body>
